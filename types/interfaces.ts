@@ -7,7 +7,7 @@ export interface Task {
   id: number;
   title: string;
   description: string;
-  isUrgent: boolean;
+  isUrgent: boolean | number;
   locationId: number;
   imageUri: string | null;
 }
