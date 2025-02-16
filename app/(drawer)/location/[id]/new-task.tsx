@@ -13,6 +13,15 @@ import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useState } from "react";
 import { Task } from "@/types/interfaces";
 import * as ImagePicker from "expo-image-picker";
+import * as Notifications from "expo-notifications";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 const Page = () => {
   const { id: locationId, taskId } = useLocalSearchParams();
@@ -28,6 +37,8 @@ const Page = () => {
     if (taskId) {
       loadTaskData();
     }
+
+    Notifications.requestPermissionsAsync();
   }, [taskId]);
 
   const loadTaskData = async () => {
@@ -65,6 +76,7 @@ const Page = () => {
 
     if (isUrgent) {
       //Notification
+      scheduleNotification(newTaskId, title);
     }
 
     router.back();
@@ -94,6 +106,20 @@ const Page = () => {
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
     }
+  };
+
+  const scheduleNotification = async (taskId: number, title: string) => {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Urgent task reminder",
+        body: `Don't forget about your urgent task: ${title}`,
+        data: { taskId, locationId },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+        seconds: 5,
+      },
+    });
   };
 
   return (
